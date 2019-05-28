@@ -1,0 +1,15 @@
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT CC.[Id]
+      ,CC.[CustomerId]
+      ,CC.[PlaceId]
+      ,CC.[Credits]
+      ,CC.[LastUpdate]
+	  ,C.Name [Customer Name]
+	  ,C.Addresses [Customer Address]
+	  ,C.Telephone
+	  ,P.Name
+  FROM [TESTDB].[dbo].[CustomerCredit] CC
+	inner join Customer C
+		on C.Id = CC.CustomerId
+	inner join Place P
+		on P.Id = CC.PlaceId
