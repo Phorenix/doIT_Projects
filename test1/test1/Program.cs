@@ -35,7 +35,6 @@ namespace test1
                         break;
                 }
             }
-
         }
 
         public static void ReadNewClient(List<Client> clients)
