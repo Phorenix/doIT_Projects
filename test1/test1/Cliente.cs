@@ -6,15 +6,15 @@ namespace test1
 {
     class Client
     {
-        public Client(string name, string address, int tel_number)
+        public Client(string name, string address, string telNumber)
         {
             Name = name;
             Address = address;
-            Tel_number = tel_number;
+            TelNumber = telNumber;
         }
 
         public string Name { get; set; }
         public string Address { get; set; }
-        public int Tel_number { get; set; }
+        public string TelNumber { get; set; }
     }
 }
