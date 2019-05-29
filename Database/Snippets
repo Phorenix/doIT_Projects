@@ -1,0 +1,60 @@
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT CC.[Id]
+      ,CC.[CustomerId]
+      ,CC.[PlaceId]
+      ,CC.[Credits]
+      ,CC.[LastUpdate]
+	  ,C.Name [Customer Name]
+	  ,C.Addresses [Customer Address]
+	  ,C.Telephone
+	  ,P.Name
+  FROM [TESTDB].[dbo].[CustomerCredit] CC
+	inner join Customer C
+		on C.Id = CC.CustomerId
+	inner join Place P
+		on P.Id = CC.PlaceId
+
+
+
+
+  DBCC CHECKIDENT ('[dbo].[Place]', RESEED, 2);
+
+
+
+
+
+
+
+
+/****** Script for SelectTopNRows command from SSMS  ******/
+SELECT TOP (1000) [Id]
+      ,[Name]
+      ,[Addresses]
+      ,[Telephone]
+  FROM [TESTDB].[dbo].[Customer]
+
+
+
+delete from Customer where id = 1
+
+
+update Customer set Name = 'Luigi Verdolini'
+	where id = 2
+
+
+Insert into Place (Name, Address) values ('Palestra San Severino', 'via abc San Severino');
+USE [TESTDB]
+GO
+
+INSERT INTO [dbo].[CustomerCredit]
+           ([CustomerId]
+           ,[PlaceId]
+           ,[Credits]
+           ,[LastUpdate])
+     VALUES
+           (2,
+           1,
+           50000,
+           getdate())
+GO
+
