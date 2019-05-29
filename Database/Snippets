@@ -17,7 +17,7 @@ SELECT CC.[Id]
 
 
 
-
+  DBCC CHECKIDENT ('[dbo].[Place]', RESEED, 2);
 
 
 
