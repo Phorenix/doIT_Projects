@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2035
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseConnectedWriting", "DatabaseConnectedWriting\DatabaseConnectedWriting.csproj", "{EC4280A2-2C0E-4219-A521-3E191B37A284}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EC4280A2-2C0E-4219-A521-3E191B37A284}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC4280A2-2C0E-4219-A521-3E191B37A284}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC4280A2-2C0E-4219-A521-3E191B37A284}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC4280A2-2C0E-4219-A521-3E191B37A284}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4EA49EFE-9693-4433-9EFD-EE9D644E83D4}
+	EndGlobalSection
+EndGlobal
