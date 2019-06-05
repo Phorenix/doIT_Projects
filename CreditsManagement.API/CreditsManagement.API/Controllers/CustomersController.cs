@@ -27,9 +27,9 @@ namespace LibraryV2.API.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public IActionResult Get([FromQuery] string orderBy = "id")
         {
-            List<CustomerModelInput> customerList = _customerDA.GetAllNames();
+            List<CustomerModelInput> customerList = _customerDA.GetAllNames(orderBy);
 
             if (!customerList.Any())
             {

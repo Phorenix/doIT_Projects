@@ -17,21 +17,30 @@ namespace CreditsManagement.API.DataAccess
             _connectionString = connectionString;
         }
 
-        public List<CustomerModelInput> GetAllNames()
+        public List<CustomerModelInput> GetAllNames(string sort = "id")
         {
             List<CustomerModelInput> names = new List<CustomerModelInput>();
+
 
             string query = @"SELECT Id
                                 ,Name
                                 ,Surname
                                 ,Credits
-                            FROM Customers";
+                            FROM Customers
+                            ORDER BY CASE WHEN @Sort = 'id' THEN Id
+                                          WHEN @Sort = 'credits' THEN Credits
+                                          END,
+                                          CASE
+                                              WHEN @Sort = 'name' THEN Name
+                                              WHEN @Sort = 'surname' THEN Surname
+                                          END";
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
                 using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
                 {
                     sqlCnn.Open();
+                    sqlCmd.Parameters.AddWithValue("@Sort", sort.ToLower());
                     using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
                     {
                         while (sqlReader.Read())
