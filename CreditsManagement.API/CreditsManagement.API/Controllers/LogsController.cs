@@ -23,16 +23,26 @@ namespace CreditsManagement.API.Controllers
         }
 
         [HttpGet("{customerId}")]
-        public IActionResult Get(int customerId, [FromQuery] DateTime from, [FromQuery] DateTime to)
+        public IActionResult Get(int customerId, [FromQuery] string fromDate, [FromQuery] string toDate)
         {
-            List<CustomerModelInput> customerList = _customerDA.GetAllNames();
+            CustomerModelInput result = _customerDA.GetById(customerId);
 
-            if (!customerList.Any())
+            if (result == null)
             {
-                return NotFound("No customers has been added.");
+                return NotFound($"Customer with id {customerId} not found.");
             }
 
-            
+            List<LogModelInput> logs = new List<LogModelInput>();
+
+            if (fromDate != null && toDate != null)
+            {
+                logs = _logDA.GetLogsInSpecificPeriod(customerId, DateTime.Parse(fromDate), DateTime.Parse(toDate));
+            }
+            else
+            {
+                logs = _logDA.GetLogsById(customerId);
+            }
+            return Ok(logs);
         }
     }
 }
