@@ -22,8 +22,44 @@ namespace CreditsManagement.API.Controllers
             _customerDA = customerDA;
         }
 
+        [HttpGet()]
+        public IActionResult Get([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
+        {
+            List<LogModelInput> logs = _logDA.GetAllLogs();
+
+            if (!logs.Any())
+            {
+                return NotFound("No logs has been added.");
+            }
+
+            if (fromDate != DateTime.MinValue || toDate != DateTime.MinValue)
+            {
+                if (fromDate != DateTime.MinValue && toDate != DateTime.MinValue)
+                {
+                    if (fromDate > toDate)
+                    {
+                        DateTime temporary = toDate;
+                        toDate = fromDate;
+                        fromDate = temporary;
+                    }
+
+                    logs = _logDA.GetAllLogsInSpecificPeriod(fromDate, toDate);
+                }
+                else
+                {
+                    logs = _logDA.GetAllLogsInPartialPeriod(fromDate, toDate);
+                }
+            }
+            else
+            {
+                logs = _logDA.GetAllLogs();
+            }
+            return Ok(logs);
+        }
+
         [HttpGet("{customerId}")]
-        public IActionResult Get(int customerId, [FromQuery] string fromDate, [FromQuery] string toDate)
+        public IActionResult Get(int customerId, 
+            [FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
         {
             CustomerModelInput result = _customerDA.GetById(customerId);
 
@@ -34,9 +70,23 @@ namespace CreditsManagement.API.Controllers
 
             List<LogModelInput> logs = new List<LogModelInput>();
 
-            if (fromDate != null && toDate != null)
+            if (fromDate != DateTime.MinValue || toDate != DateTime.MinValue)
             {
-                logs = _logDA.GetLogsInSpecificPeriod(customerId, DateTime.Parse(fromDate), DateTime.Parse(toDate));
+                if (fromDate != DateTime.MinValue && toDate != DateTime.MinValue)
+                {
+                    if (fromDate > toDate)
+                    {
+                        DateTime temporary = toDate;
+                        toDate = fromDate;
+                        fromDate = temporary;
+                    }
+
+                    logs = _logDA.GetLogsInSpecificPeriod(customerId, fromDate, toDate);
+                }
+                else
+                {
+                    logs = _logDA.GetLogsInPartialPeriod(customerId, fromDate, toDate);
+                }
             }
             else
             {

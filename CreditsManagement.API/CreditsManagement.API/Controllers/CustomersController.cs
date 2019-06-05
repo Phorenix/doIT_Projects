@@ -84,9 +84,11 @@ namespace LibraryV2.API.Controllers
                 return NotFound("Customer not found.");
             }
 
-            bool result = _customerDA.DeleteById(id);
+            bool resultDeleteCustomer = _customerDA.DeleteById(id);
 
-            if (result)
+            bool resultDeleteLogs = _logDA.DeleteById(id);
+
+            if (resultDeleteCustomer && resultDeleteLogs)
             {
                 return Ok("Customer deleted without any problems.");
             }
@@ -180,10 +182,6 @@ namespace LibraryV2.API.Controllers
         public IActionResult ConsumeCredits(int customerId,
             [FromBody] ConsumeRequest credits)
         {
-            // aggiornare i crediti su catomer avanzo = avanzo-credit
-
-            // insert log operat type consume
-
             CustomerModelInput currentCustomer = _customerDA.GetById(customerId);
 
             if (currentCustomer == null)
