@@ -20,10 +20,10 @@ namespace LibraryV2.API.Controllers
         /// This is the controller for customers
         /// </summary>
         /// <param name="customerDA">Data access to read from database the customers</param>
-        public CustomersController(CustomersDA customerDA, LogsDA logDa)
+        public CustomersController(CustomersDA customerDA, LogsDA logDA)
         {
             _customerDA = customerDA;
-            _logDA = logDa;
+            _logDA = logDA;
         }
 
         [HttpGet]
