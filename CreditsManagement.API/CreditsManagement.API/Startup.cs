@@ -33,6 +33,8 @@ namespace CreditsManagement.API
             });
 
             var connectionString = Configuration["connectionStrings:testDBConnectionString"];
+
+            services.AddScoped<LogsDA>(da => new LogsDA(connectionString));
             services.AddScoped<CustomersDA>(da => new CustomersDA(connectionString));
         }
 

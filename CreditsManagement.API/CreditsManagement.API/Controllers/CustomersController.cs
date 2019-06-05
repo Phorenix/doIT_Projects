@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CreditsManagement.API.DataAccess;
 using CreditsManagement.API.Models;
 using Microsoft.AspNetCore.JsonPatch;
+using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LibraryV2.API.Controllers
@@ -13,14 +14,16 @@ namespace LibraryV2.API.Controllers
     public class CustomersController : Controller
     {
         private CustomersDA _customerDA;
+        private LogsDA _logDA;
 
         /// <summary>
         /// This is the controller for customers
         /// </summary>
         /// <param name="customerDA">Data access to read from database the customers</param>
-        public CustomersController(CustomersDA customerDA)
+        public CustomersController(CustomersDA customerDA, LogsDA logDa)
         {
             _customerDA = customerDA;
+            _logDA = logDa;
         }
 
         [HttpGet]
@@ -30,7 +33,7 @@ namespace LibraryV2.API.Controllers
 
             if (!customerList.Any())
             {
-                return NotFound("No customers has been added");
+                return NotFound("No customers has been added.");
             }
             return Ok(customerList);
         }
@@ -94,7 +97,8 @@ namespace LibraryV2.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] CustomerModelUpdate customer)
+        public IActionResult Put(int id, 
+            [FromBody] CustomerModelUpdate customer)
         {
             if (customer == null)
             {
@@ -136,7 +140,8 @@ namespace LibraryV2.API.Controllers
         }
 
         [HttpPatch("{id}")]
-        public IActionResult Patch(int id, [FromBody] JsonPatchDocument<CustomerModelUpdate> patchDoc)
+        public IActionResult Patch(int id, 
+            [FromBody] JsonPatchDocument<CustomerModelUpdate> patchDoc)
         {
             if (patchDoc == null)
             {
@@ -164,6 +169,89 @@ namespace LibraryV2.API.Controllers
             if (result)
             {
                 return Ok("Customer updated without any problems.");
+            }
+            else
+            {
+                return StatusCode(500, "A problem happened with headling your request.");
+            }
+        }
+
+        [HttpPost("{customerId}/consume")]
+        public IActionResult ConsumeCredits(int customerId,
+            [FromBody] ConsumeRequest credits)
+        {
+            // aggiornare i crediti su catomer avanzo = avanzo-credit
+
+            // insert log operat type consume
+
+            CustomerModelInput currentCustomer = _customerDA.GetById(customerId);
+
+            if (currentCustomer == null)
+            {
+                return NotFound($"Customer with id {customerId} not found.");
+            }
+
+            if (currentCustomer.Credits < credits.Amount)
+            {
+                return BadRequest("Credits can't be consumed because the customer hasn't enough credits.");
+            }
+
+            CustomerModelUpdate customerToPatchCredits = new CustomerModelUpdate()
+            {
+                Name = currentCustomer.Name,
+                Surname = currentCustomer.Surname,
+                Credits = currentCustomer.Credits - credits.Amount
+            };
+
+            bool resultCustomerUpdate = _customerDA.UpdateCustomer(customerId, customerToPatchCredits);
+
+            bool resultLogConsumed = _logDA.AddLog(new LogModelOutput()
+            {
+                CustomerId = customerId,
+                OperationType = 1,
+                Amount = credits.Amount
+            });
+
+            if (resultCustomerUpdate && resultLogConsumed)
+            {
+                return Ok("Credits consumed without any problems.");
+            }
+            else
+            {
+                return StatusCode(500, "A problem happened with headling your request.");
+            }
+        }
+
+        [HttpPost("{customerId}/charge")]
+        public IActionResult ChargeCredits(int customerId,
+            [FromBody] ChargeRequest credits)
+        {
+            CustomerModelInput currentCustomer = _customerDA.GetById(customerId);
+
+            if (currentCustomer == null)
+            {
+                return NotFound($"Customer with id {customerId} not found.");
+            }
+
+            CustomerModelUpdate customerToPatchCredits = new CustomerModelUpdate()
+            {
+                Name = currentCustomer.Name,
+                Surname = currentCustomer.Surname,
+                Credits = currentCustomer.Credits + credits.Amount
+            };
+
+            bool resultCustomerUpdate = _customerDA.UpdateCustomer(customerId, customerToPatchCredits);
+
+            bool resultLogAdded = _logDA.AddLog(new LogModelOutput()
+            {
+                CustomerId = customerId,
+                OperationType = 2,
+                Amount = credits.Amount
+            });
+
+            if (resultCustomerUpdate && resultLogAdded)
+            {
+                return Ok("Credits added without any problems.");
             }
             else
             {
