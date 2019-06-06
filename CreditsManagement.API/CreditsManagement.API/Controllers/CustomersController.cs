@@ -53,7 +53,6 @@ namespace LibraryV2.API.Controllers
             }
         }
 
-
         [HttpPost]
         public IActionResult Post([FromBody] Customer customer)
         {
@@ -62,9 +61,14 @@ namespace LibraryV2.API.Controllers
                 return BadRequest("A problem happened with headling your request.");
             }
 
-            bool result = _customerDA.AddCustomer(customer);
+            bool resultCustomerAdded = _customerDA.AddCustomerAndLog(customer, new Log()
+            {
+                CustomerId = customer.Id,
+                OperationType = 2,
+                Amount = customer.Credits
+            });
 
-            if (result)
+            if (resultCustomerAdded)
             {
                 return Ok("Customer added without any problems.");
             }
@@ -86,9 +90,7 @@ namespace LibraryV2.API.Controllers
 
             bool resultDeleteCustomer = _customerDA.DeleteById(id);
 
-            bool resultDeleteLogs = _logDA.DeleteById(id);
-
-            if (resultDeleteCustomer && resultDeleteLogs)
+            if (resultDeleteCustomer)
             {
                 return Ok("Customer deleted without any problems.");
             }
@@ -112,11 +114,16 @@ namespace LibraryV2.API.Controllers
             if (exist == null)
             {
                 //return NotFound("Customer not found.");
-                bool added = _customerDA.AddCustomer(new Customer()
+                bool added = _customerDA.AddCustomerAndLog(new Customer()
                 {
                     Name = customer.Name,
                     Surname = customer.Surname,
                     Credits = customer.Credits
+                }, new Log()
+                {
+                    CustomerId = customer.Id,
+                    OperationType = 2,
+                    Amount = customer.Credits
                 });
 
                 if (added)
@@ -127,6 +134,11 @@ namespace LibraryV2.API.Controllers
                 {
                     return StatusCode(500, "A problem happened with headling your request.");
                 }
+            }
+
+            if (exist.Credits != customer.Credits)
+            {
+                return BadRequest("You can't modify the credits in this way");
             }
 
             bool result = _customerDA.UpdateCustomer(id, customer);
@@ -164,7 +176,17 @@ namespace LibraryV2.API.Controllers
                 Credits = currentCustomer.Credits
             };
 
-            patchDoc.ApplyTo(customerToPatch);
+            patchDoc.ApplyTo(new Customer()
+            {
+                Name = currentCustomer.Name,
+                Surname = currentCustomer.Surname,
+                Credits = currentCustomer.Credits
+            });
+
+            if (customerToPatch.Credits != currentCustomer.Credits)
+            {
+                return BadRequest("You can't modify the credits in this way");
+            }
 
             bool result = _customerDA.UpdateCustomer(id, customerToPatch);
 
@@ -194,23 +216,19 @@ namespace LibraryV2.API.Controllers
                 return BadRequest("Credits can't be consumed because the customer hasn't enough credits.");
             }
 
-            Customer customerToPatchCredits = new Customer()
+            bool resultLogConsumed = _customerDA.UpdateCustomerAndLog(customerId, new Customer()
             {
                 Name = currentCustomer.Name,
                 Surname = currentCustomer.Surname,
                 Credits = currentCustomer.Credits - credits.Amount
-            };
-
-            bool resultCustomerUpdate = _customerDA.UpdateCustomer(customerId, customerToPatchCredits);
-
-            bool resultLogConsumed = _logDA.AddLog(new Log()
+            }, new Log()
             {
                 CustomerId = customerId,
                 OperationType = 1,
                 Amount = credits.Amount
             });
 
-            if (resultCustomerUpdate && resultLogConsumed)
+            if (resultLogConsumed)
             {
                 return Ok("Credits consumed without any problems.");
             }
@@ -231,23 +249,19 @@ namespace LibraryV2.API.Controllers
                 return NotFound($"Customer with id {customerId} not found.");
             }
 
-            Customer customerToPatchCredits = new Customer()
+            bool resultLogAdded = _customerDA.UpdateCustomerAndLog(customerId, new Customer()
             {
                 Name = currentCustomer.Name,
                 Surname = currentCustomer.Surname,
                 Credits = currentCustomer.Credits + credits.Amount
-            };
-
-            bool resultCustomerUpdate = _customerDA.UpdateCustomer(customerId, customerToPatchCredits);
-
-            bool resultLogAdded = _logDA.AddLog(new Log()
+            }, new Log()
             {
                 CustomerId = customerId,
                 OperationType = 2,
                 Amount = credits.Amount
             });
 
-            if (resultCustomerUpdate && resultLogAdded)
+            if (resultLogAdded)
             {
                 return Ok("Credits added without any problems.");
             }

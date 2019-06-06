@@ -74,8 +74,11 @@ namespace CreditsManagement.API.DataAccess
 
         public List<Customer> GetAllNames(string sort = "id")
         {
-            List<Customer> names = new List<Customer>(); 
+            List<Customer> names = new List<Customer>();
 
+            if (sort.Split(' ').Length > 1 
+                 || sort.Contains('\''))
+                throw new Exception("Simone non mi freghi!");
 
             string query = @"SELECT Id
                                 ,Name
@@ -134,9 +137,18 @@ namespace CreditsManagement.API.DataAccess
             return customerToReturn;
         }
 
-        public bool AddCustomer(Customer customer)
+        public bool AddCustomerAndLog(Customer customerToAdd, Log logToAdd)
         {
-            string query = @"INSERT INTO Customers (Name, Surname, Credits) VALUES (@Name, @Surname, @Credits)";
+            string query = @"BEGIN TRY
+                                BEGIN TRANSACTION
+                                    INSERT INTO Customers (Name, Surname, Credits) VALUES (@Name, @Surname, @Credits)
+                                    INSERT INTO OperationLog (CustomerId, OperationType, Amount) VALUES (@CustomerId, @OperationType, @Amount)
+                                    COMMIT
+                            END TRY
+
+                            BEGIN CATCH
+                                ROLLBACK
+                            END CATCH";
 
             bool result = true;
 
@@ -146,9 +158,13 @@ namespace CreditsManagement.API.DataAccess
                 {
                     using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
                     {
-                        sqlCmd.Parameters.AddWithValue("@Name", customer.Name);
-                        sqlCmd.Parameters.AddWithValue("@Surname", customer.Surname);
-                        sqlCmd.Parameters.AddWithValue("@Credits", customer.Credits);
+                        sqlCmd.Parameters.AddWithValue("@Name", customerToAdd.Name);
+                        sqlCmd.Parameters.AddWithValue("@Surname", customerToAdd.Surname);
+                        sqlCmd.Parameters.AddWithValue("@Credits", customerToAdd.Credits);
+
+                        sqlCmd.Parameters.AddWithValue("@CustomerId", logToAdd.CustomerId);
+                        sqlCmd.Parameters.AddWithValue("@OperationType", logToAdd.OperationType);
+                        sqlCmd.Parameters.AddWithValue("@Amount", logToAdd.Amount);
 
                         sqlCnn.Open();
                         int rowsAffected = sqlCmd.ExecuteNonQuery();
@@ -165,7 +181,16 @@ namespace CreditsManagement.API.DataAccess
 
         public bool DeleteById(int id)
         {
-            string query = @"DELETE FROM Customers WHERE Id = @Id";
+            string query = @"BEGIN TRY
+                                BEGIN TRANSACTION
+                                    DELETE FROM OperationLog WHERE CustomerId = @Id
+                                    DELETE FROM Customers WHERE Id = @Id                           
+                                    COMMIT
+                            END TRY
+
+                            BEGIN CATCH
+                                ROLLBACK
+                            END CATCH";
 
             bool result = true;
 
@@ -190,12 +215,11 @@ namespace CreditsManagement.API.DataAccess
             return result;
         }
 
-        public bool UpdateCustomer(int id, Customer customer)
+        public bool UpdateCustomer(int id, Customer customerToUpdate)
         {
             string query = @"UPDATE Customers SET Name = @Name
-	                            ,Surname = @Surname
-	                            ,Credits = @Credits
-                            WHERE Id = @Id";
+	                                    ,Surname = @Surname
+                             WHERE Id = @Id";
 
             bool result = true;
 
@@ -206,9 +230,54 @@ namespace CreditsManagement.API.DataAccess
                     using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
                     {
                         sqlCmd.Parameters.AddWithValue("@Id", id);
-                        sqlCmd.Parameters.AddWithValue("@Name", customer.Name);
-                        sqlCmd.Parameters.AddWithValue("@Surname", customer.Surname);
-                        sqlCmd.Parameters.AddWithValue("@Credits", customer.Credits);
+                        sqlCmd.Parameters.AddWithValue("@Name", customerToUpdate.Name);
+                        sqlCmd.Parameters.AddWithValue("@Surname", customerToUpdate.Surname);
+
+                        sqlCnn.Open();
+                        int rowsAffected = sqlCmd.ExecuteNonQuery();
+                        sqlCnn.Close();
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                result = false;
+            }
+            return result;
+        }
+
+        public bool UpdateCustomerAndLog(int id, Customer customerToUpdate, Log logToUpdate)
+        {
+            string query = @"BEGIN TRY
+                                BEGIN TRANSACTION
+                                    UPDATE Customers SET Name = @Name
+	                                    ,Surname = @Surname
+	                                    ,Credits = @Credits
+                                    WHERE Id = @Id
+                                    INSERT INTO OperationLog (CustomerId, OperationType, Amount) VALUES (@CustomerId, @OperationType, @Amount)
+                                    COMMIT
+                            END TRY
+
+                            BEGIN CATCH
+                                ROLLBACK
+                            END CATCH";
+
+            bool result = true;
+
+            try
+            {
+                using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+                {
+                    using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
+                    {
+                        sqlCmd.Parameters.AddWithValue("@Id", id);
+                        sqlCmd.Parameters.AddWithValue("@Name", customerToUpdate.Name);
+                        sqlCmd.Parameters.AddWithValue("@Surname", customerToUpdate.Surname);
+                        sqlCmd.Parameters.AddWithValue("@Credits", customerToUpdate.Credits);
+
+                        sqlCmd.Parameters.AddWithValue("@CustomerId", logToUpdate.CustomerId);
+                        sqlCmd.Parameters.AddWithValue("@OperationType", logToUpdate.OperationType);
+                        sqlCmd.Parameters.AddWithValue("@Amount", logToUpdate.Amount);
 
                         sqlCnn.Open();
                         int rowsAffected = sqlCmd.ExecuteNonQuery();

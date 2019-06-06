@@ -45,7 +45,8 @@ namespace CreditsManagement.API.DataAccess
                 CustomerSurname = sqlReader["CustomerSurname"].ToString(),
                 OperationType = int.Parse(sqlReader["OperationType"].ToString()),
                 Amount = int.Parse(sqlReader["Amount"].ToString()),
-                Date = DateTime.Parse(sqlReader["OperationDate"].ToString())
+                Date = (DateTime)sqlReader["OperationDate"]
+                // Date = sqlReader["OperationDate"] != DBNull.Value ? (DateTime) sqlReader["OperationDate"] : (DateTime?) null
             };
             return res;
         }
@@ -71,7 +72,7 @@ namespace CreditsManagement.API.DataAccess
 
         }
 
-        private List<Log> GetLogsByIdSingleDate(int customerId, string query, DateTime date)
+        private List<Log> ReadLogsByIdSingleDate(int customerId, string query, DateTime date)
         {
             List<Log> logs = new List<Log>();
 
@@ -103,7 +104,7 @@ namespace CreditsManagement.API.DataAccess
 	                            ,L.Amount
 	                            ,L.OperationDate
                             FROM OperationLog AS L
-                            INNER JOIN Customers AS C ON L.CustomerID = C.ID";
+                            INNER JOIN Customers AS C ON L.CustomerID = C.ID ";
             return query;
         }
 
@@ -136,8 +137,7 @@ namespace CreditsManagement.API.DataAccess
         {
             List<Log> logs = new List<Log>();
 
-            string query = @"" + ShortQuerySelect() +
-                            "WHERE @From <= L.OperationDate AND L.OperationDate <= @To";
+            string query = @"" + ShortQuerySelect() + "WHERE @From <= L.OperationDate AND L.OperationDate <= @To";
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
@@ -236,7 +236,7 @@ namespace CreditsManagement.API.DataAccess
             string query = @"" + ShortQuerySelect() +
                             "WHERE L.OperationDate <= @Date AND L.CustomerId = @CustomerId";
 
-            logs = GetLogsByIdSingleDate(customerId, query, toDate);
+            logs = ReadLogsByIdSingleDate(customerId, query, toDate);
 
             return logs;
         }
@@ -248,65 +248,10 @@ namespace CreditsManagement.API.DataAccess
             string query = @"" + ShortQuerySelect() +
                             "WHERE @Date <= L.OperationDate AND L.CustomerId = @CustomerId";
 
-            logs = GetLogsByIdSingleDate(customerId, query, fromDate);
+            logs = ReadLogsByIdSingleDate(customerId, query, fromDate);
 
             return logs;
         }
 
-        public bool AddLog(Log logToAdd)
-        {
-            string query = @"INSERT INTO OperationLog (CustomerId, OperationType, Amount) VALUES (@CustomerId, @OperationType, @Amount)";
-
-            bool result = true;
-
-            try
-            {
-                using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
-                {
-                    using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
-                    {
-                        sqlCmd.Parameters.AddWithValue("@CustomerId", logToAdd.CustomerId);
-                        sqlCmd.Parameters.AddWithValue("@OperationType", logToAdd.OperationType);
-                        sqlCmd.Parameters.AddWithValue("@Amount", logToAdd.Amount);
-
-                        sqlCnn.Open();
-                        int rowsAffected = sqlCmd.ExecuteNonQuery();
-                        sqlCnn.Close();
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                result = false;
-            }
-            return result;
-        }
-
-        public bool DeleteById(int customerId)
-        {
-            string query = @"DELETE FROM OperationLogs WHERE CustomerId = @CustomerId";
-
-            bool result = true;
-
-            try
-            {
-                using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
-                {
-                    using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
-                    {
-                        sqlCmd.Parameters.AddWithValue("@CustomerId", customerId);
-
-                        sqlCnn.Open();
-                        int rowsAffected = sqlCmd.ExecuteNonQuery();
-                        sqlCnn.Close();
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                result = false;
-            }
-            return result;
-        }
     }
 }
