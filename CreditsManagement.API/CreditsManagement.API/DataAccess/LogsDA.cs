@@ -16,111 +16,43 @@ namespace CreditsManagement.API.DataAccess
             _connectionString = connectionString;
         }
 
-        public List<LogModelInput> GetAllLogs()
+        //------------------------------------------
+        // Methods to simplify the code
+        //------------------------------------------
+
+        private List<Log> ReadAllLogsFromCmd(SqlCommand sqlCmd)
         {
-            List<LogModelInput> logs = new List<LogModelInput>();
-
-            string query = @"SELECT Id
-                                ,CustomerId
-                                ,OperationType
-                                ,Amount
-                                ,OperationDate
-                            FROM OperationLog";
-
-            using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+            List<Log> logs = new List<Log>();
+            using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
             {
-                using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
+                while (sqlReader.Read())
                 {
-                    sqlCnn.Open();
-                    using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
-                    {
-                        while (sqlReader.Read())
-                        {
-                            logs.Add(new LogModelInput()
-                            {
-                                Id = int.Parse(sqlReader["Id"].ToString()),
-                                CustomerId = int.Parse(sqlReader["CustomerId"].ToString()),
-                                OperationType = int.Parse(sqlReader["OperationType"].ToString()),
-                                Amount = int.Parse(sqlReader["Amount"].ToString()),
-                                Date = DateTime.Parse(sqlReader["OperationDate"].ToString())
-                            });
-                        }
-                    }
-                    sqlCnn.Close();
+                    logs.Add(ReadLog(sqlReader));
                 }
             }
+
             return logs;
+        
         }
 
-        public List<LogModelInput> GetAllLogsInSpecificPeriod(DateTime fromDate, DateTime toDate)
+        private Log ReadLog(SqlDataReader sqlReader)
         {
-            List<LogModelInput> logs = new List<LogModelInput>();
-
-            string query = @"SELECT Id
-                                ,CustomerId
-                                ,OperationType
-                                ,Amount
-                                ,OperationDate
-                            FROM OperationLog
-                            WHERE @From <= OperationDate AND OperationDate <= @To";
-
-            using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+            Log res = new Log()
             {
-                using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
-                {
-                    sqlCnn.Open();
-                    sqlCmd.Parameters.AddWithValue("@From", fromDate);
-                    sqlCmd.Parameters.AddWithValue("@To", toDate);
-                    using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
-                    {
-                        while (sqlReader.Read())
-                        {
-                            logs.Add(new LogModelInput()
-                            {
-                                Id = int.Parse(sqlReader["Id"].ToString()),
-                                CustomerId = int.Parse(sqlReader["CustomerId"].ToString()),
-                                OperationType = int.Parse(sqlReader["OperationType"].ToString()),
-                                Amount = int.Parse(sqlReader["Amount"].ToString()),
-                                Date = DateTime.Parse(sqlReader["OperationDate"].ToString())
-                            });
-                        }
-                    }
-                    sqlCnn.Close();
-                }
-            }
-            return logs;
+                Id = int.Parse(sqlReader["Id"].ToString()),
+                CustomerId = int.Parse(sqlReader["CustomerId"].ToString()),
+                CustomerName = sqlReader["CustomerName"].ToString(),
+                CustomerSurname = sqlReader["CustomerSurname"].ToString(),
+                OperationType = int.Parse(sqlReader["OperationType"].ToString()),
+                Amount = int.Parse(sqlReader["Amount"].ToString()),
+                Date = DateTime.Parse(sqlReader["OperationDate"].ToString())
+            };
+            return res;
         }
 
-        public List<LogModelInput> GetAllLogsInPartialPeriod(DateTime fromDate, DateTime toDate)
+        private List<Log> GetLogsSingleDate(string query, DateTime date)
         {
-            List<LogModelInput> logs = new List<LogModelInput>();
-
-            string query;
-
-            DateTime date = new DateTime();
-
-            if (fromDate != DateTime.MinValue && toDate == DateTime.MinValue)
-            {
-                query = @"SELECT Id
-                                ,CustomerId
-                                ,OperationType
-                                ,Amount
-                                ,OperationDate
-                            FROM OperationLog
-                            WHERE @Date <= OperationDate";
-                date = fromDate;
-            }
-            else
-            {
-                query = @"SELECT Id
-                                ,CustomerId
-                                ,OperationType
-                                ,Amount
-                                ,OperationDate
-                            FROM OperationLog
-                            WHERE OperationDate <= @Date";
-                date = toDate;
-            }
+            List<Log> logs = new List<Log>();
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
@@ -128,134 +60,20 @@ namespace CreditsManagement.API.DataAccess
                 {
                     sqlCnn.Open();
                     sqlCmd.Parameters.AddWithValue("@Date", date);
-                    using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
-                    {
-                        while (sqlReader.Read())
-                        {
-                            logs.Add(new LogModelInput()
-                            {
-                                Id = int.Parse(sqlReader["Id"].ToString()),
-                                CustomerId = int.Parse(sqlReader["CustomerId"].ToString()),
-                                OperationType = int.Parse(sqlReader["OperationType"].ToString()),
-                                Amount = int.Parse(sqlReader["Amount"].ToString()),
-                                Date = DateTime.Parse(sqlReader["OperationDate"].ToString())
-                            });
-                        }
-                    }
+
+                    logs = ReadAllLogsFromCmd(sqlCmd);
+
                     sqlCnn.Close();
                 }
             }
+
             return logs;
+
         }
 
-        public List<LogModelInput> GetLogsById(int customerId)
+        private List<Log> GetLogsByIdSingleDate(int customerId, string query, DateTime date)
         {
-            List<LogModelInput> logs = new List<LogModelInput>();
-
-            string query = @"SELECT Id
-                                ,CustomerId
-                                ,OperationType
-                                ,Amount
-                                ,OperationDate
-                            FROM OperationLog
-                            WHERE CustomerId = @CustomerId";
-
-            using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
-            {
-                using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
-                {
-                    sqlCnn.Open();
-                    sqlCmd.Parameters.AddWithValue("@CustomerId", customerId);
-                    using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
-                    {
-                        while (sqlReader.Read())
-                        {
-                            logs.Add(new LogModelInput()
-                            {
-                                Id = int.Parse(sqlReader["Id"].ToString()),
-                                CustomerId = int.Parse(sqlReader["CustomerId"].ToString()),
-                                OperationType = int.Parse(sqlReader["OperationType"].ToString()),
-                                Amount = int.Parse(sqlReader["Amount"].ToString()),
-                                Date = DateTime.Parse(sqlReader["OperationDate"].ToString())
-                            });
-                        }
-                    }
-                    sqlCnn.Close();
-                }
-            }
-            return logs;
-        }
-
-        public List<LogModelInput> GetLogsInSpecificPeriod(int customerId, DateTime fromDate, DateTime toDate)
-        {
-            List<LogModelInput> logs = new List<LogModelInput>();
-
-            string query = @"SELECT Id
-                                ,CustomerId
-                                ,OperationType
-                                ,Amount
-                                ,OperationDate
-                            FROM OperationLog
-                            WHERE @From <= OperationDate AND OperationDate <= @To AND CustomerId = @CustomerId";
-
-            using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
-            {
-                using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
-                {
-                    sqlCnn.Open();
-                    sqlCmd.Parameters.AddWithValue("@From", fromDate);
-                    sqlCmd.Parameters.AddWithValue("@To", toDate);
-                    sqlCmd.Parameters.AddWithValue("@CustomerId", customerId);
-                    using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
-                    {
-                        while (sqlReader.Read())
-                        {
-                            logs.Add(new LogModelInput()
-                            {
-                                Id = int.Parse(sqlReader["Id"].ToString()),
-                                CustomerId = int.Parse(sqlReader["CustomerId"].ToString()),
-                                OperationType = int.Parse(sqlReader["OperationType"].ToString()),
-                                Amount = int.Parse(sqlReader["Amount"].ToString()),
-                                Date = DateTime.Parse(sqlReader["OperationDate"].ToString())
-                            });
-                        }
-                    }
-                    sqlCnn.Close();
-                }
-            }
-            return logs;
-        }
-
-        public List<LogModelInput> GetLogsInPartialPeriod(int customerId, DateTime fromDate, DateTime toDate)
-        {
-            List<LogModelInput> logs = new List<LogModelInput>();
-
-            string query;
-
-            DateTime date = new DateTime();
-
-            if (fromDate != DateTime.MinValue && toDate == DateTime.MinValue)
-            {
-                query = @"SELECT Id
-                                ,CustomerId
-                                ,OperationType
-                                ,Amount
-                                ,OperationDate
-                            FROM OperationLog
-                            WHERE @Date <= OperationDate AND CustomerId = @CustomerId";
-                date = fromDate;
-            }
-            else
-            {
-                query = @"SELECT Id
-                                ,CustomerId
-                                ,OperationType
-                                ,Amount
-                                ,OperationDate
-                            FROM OperationLog
-                            WHERE OperationDate <= @Date AND CustomerId = @CustomerId";
-                date = toDate;
-            }
+            List<Log> logs = new List<Log>();
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
@@ -264,27 +82,178 @@ namespace CreditsManagement.API.DataAccess
                     sqlCnn.Open();
                     sqlCmd.Parameters.AddWithValue("@Date", date);
                     sqlCmd.Parameters.AddWithValue("@CustomerId", customerId);
-                    using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
-                    {
-                        while (sqlReader.Read())
-                        {
-                            logs.Add(new LogModelInput()
-                            {
-                                Id = int.Parse(sqlReader["Id"].ToString()),
-                                CustomerId = int.Parse(sqlReader["CustomerId"].ToString()),
-                                OperationType = int.Parse(sqlReader["OperationType"].ToString()),
-                                Amount = int.Parse(sqlReader["Amount"].ToString()),
-                                Date = DateTime.Parse(sqlReader["OperationDate"].ToString())
-                            });
-                        }
-                    }
+
+                    logs = ReadAllLogsFromCmd(sqlCmd);
+
+                    sqlCnn.Close();
+                }
+            }
+
+            return logs;
+
+        }
+
+        private string ShortQuerySelect()
+        {
+            string query = @"SELECT L.Id
+                                , L.CustomerId
+	                            ,C.Name AS CustomerName
+	                            ,C.Surname AS CustomerSurname
+	                            ,L.OperationType
+	                            ,L.Amount
+	                            ,L.OperationDate
+                            FROM OperationLog AS L
+                            INNER JOIN Customers AS C ON L.CustomerID = C.ID";
+            return query;
+        }
+
+        //------------------------------------------
+        // Methods to Get all logs
+        //------------------------------------------
+
+        public List<Log> GetAllLogs()
+        {
+            List<Log> logs = new List<Log>();
+
+            // Name, Surname
+            string query = ShortQuerySelect();
+
+            using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
+                {
+                    sqlCnn.Open();
+
+                    logs = ReadAllLogsFromCmd(sqlCmd);
+
                     sqlCnn.Close();
                 }
             }
             return logs;
         }
 
-        public bool AddLog(LogModelOutput logToAdd)
+        public List<Log> GetAllLogsInSpecificPeriod(DateTime fromDate, DateTime toDate)
+        {
+            List<Log> logs = new List<Log>();
+
+            string query = @"" + ShortQuerySelect() +
+                            "WHERE @From <= L.OperationDate AND L.OperationDate <= @To";
+
+            using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
+                {
+                    sqlCnn.Open();
+                    sqlCmd.Parameters.AddWithValue("@From", fromDate);
+                    sqlCmd.Parameters.AddWithValue("@To", toDate);
+
+                    logs = ReadAllLogsFromCmd(sqlCmd);
+
+                    sqlCnn.Close();
+                }
+            }
+            return logs;
+        }
+
+        public List<Log> GetAllLogsUntilDate(DateTime toDate)
+        {
+            List<Log> logs = new List<Log>();
+
+            string query = @"" + ShortQuerySelect() +
+                            "WHERE L.OperationDate <= @Date";
+
+            logs = GetLogsSingleDate(query, toDate);
+
+            return logs;
+        }
+
+        public List<Log> GetAllLogsFromDate(DateTime fromDate)
+        {
+            List<Log> logs = new List<Log>();
+
+            string query = @"" + ShortQuerySelect() +
+                            "WHERE @Date <= L.OperationDate";
+
+            logs = GetLogsSingleDate(query, fromDate);
+
+            return logs;
+        }
+
+        //------------------------------------------
+        // Methods to Get logs by customerId
+        //------------------------------------------
+
+        public List<Log> GetLogsById(int customerId)
+        {
+            List<Log> logs = new List<Log>();
+
+            string query = @"" + ShortQuerySelect() +
+                            "WHERE L.CustomerId = @CustomerId";
+
+            using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
+                {
+                    sqlCnn.Open();
+                    sqlCmd.Parameters.AddWithValue("@CustomerId", customerId);
+
+                    logs = ReadAllLogsFromCmd(sqlCmd);
+
+                    sqlCnn.Close();
+                }
+            }
+            return logs;
+        }
+
+        public List<Log> GetLogsInSpecificPeriod(int customerId, DateTime fromDate, DateTime toDate)
+        {
+            List<Log> logs = new List<Log>();
+
+            string query = @"" + ShortQuerySelect() +
+                            "WHERE @From <= L.OperationDate AND L.OperationDate <= @To AND L.CustomerId = @CustomerId";
+
+            using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+            {
+                using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
+                {
+                    sqlCnn.Open();
+                    sqlCmd.Parameters.AddWithValue("@From", fromDate);
+                    sqlCmd.Parameters.AddWithValue("@To", toDate);
+                    sqlCmd.Parameters.AddWithValue("@CustomerId", customerId);
+
+                    logs = ReadAllLogsFromCmd(sqlCmd);
+
+                    sqlCnn.Close();
+                }
+            }
+            return logs;
+        }
+
+        public List<Log> GetLogsByIdUntilDate(int customerId, DateTime toDate)
+        {
+            List<Log> logs = new List<Log>();
+
+            string query = @"" + ShortQuerySelect() +
+                            "WHERE L.OperationDate <= @Date AND L.CustomerId = @CustomerId";
+
+            logs = GetLogsByIdSingleDate(customerId, query, toDate);
+
+            return logs;
+        }
+
+        public List<Log> GetLogsByIdFromDate(int customerId, DateTime fromDate)
+        {
+            List<Log> logs = new List<Log>();
+
+            string query = @"" + ShortQuerySelect() +
+                            "WHERE @Date <= L.OperationDate AND L.CustomerId = @CustomerId";
+
+            logs = GetLogsByIdSingleDate(customerId, query, fromDate);
+
+            return logs;
+        }
+
+        public bool AddLog(Log logToAdd)
         {
             string query = @"INSERT INTO OperationLog (CustomerId, OperationType, Amount) VALUES (@CustomerId, @OperationType, @Amount)";
 

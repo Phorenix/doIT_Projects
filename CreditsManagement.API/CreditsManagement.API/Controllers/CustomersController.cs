@@ -29,7 +29,7 @@ namespace LibraryV2.API.Controllers
         [HttpGet]
         public IActionResult Get([FromQuery] string orderBy = "id")
         {
-            List<CustomerModelInput> customerList = _customerDA.GetAllNames(orderBy);
+            List<Customer> customerList = _customerDA.GetAllNames(orderBy);
 
             if (!customerList.Any())
             {
@@ -41,7 +41,7 @@ namespace LibraryV2.API.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
-            CustomerModelInput result = _customerDA.GetById(id);
+            Customer result = _customerDA.GetById(id);
 
             if (result == null)
             {
@@ -55,7 +55,7 @@ namespace LibraryV2.API.Controllers
 
 
         [HttpPost]
-        public IActionResult Post([FromBody] CustomerModelOutput customer)
+        public IActionResult Post([FromBody] Customer customer)
         {
             if (customer == null)
             {
@@ -77,7 +77,7 @@ namespace LibraryV2.API.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteCustomer(int id)
         {
-            CustomerModelInput exist = _customerDA.GetById(id);
+            Customer exist = _customerDA.GetById(id);
 
             if (exist == null)
             {
@@ -100,19 +100,19 @@ namespace LibraryV2.API.Controllers
 
         [HttpPut("{id}")]
         public IActionResult Put(int id, 
-            [FromBody] CustomerModelUpdate customer)
+            [FromBody] Customer customer)
         {
             if (customer == null)
             {
                 return BadRequest("A problem happened with headling your request.");
             }
 
-            CustomerModelInput exist = _customerDA.GetById(id);
+            Customer exist = _customerDA.GetById(id);
 
             if (exist == null)
             {
                 //return NotFound("Customer not found.");
-                bool added = _customerDA.AddCustomer(new CustomerModelOutput()
+                bool added = _customerDA.AddCustomer(new Customer()
                 {
                     Name = customer.Name,
                     Surname = customer.Surname,
@@ -143,21 +143,21 @@ namespace LibraryV2.API.Controllers
 
         [HttpPatch("{id}")]
         public IActionResult Patch(int id, 
-            [FromBody] JsonPatchDocument<CustomerModelUpdate> patchDoc)
+            [FromBody] JsonPatchDocument<Customer> patchDoc)
         {
             if (patchDoc == null)
             {
                 return BadRequest("A problem happened with headling your request.");
             }
 
-            CustomerModelInput currentCustomer = _customerDA.GetById(id);
+            Customer currentCustomer = _customerDA.GetById(id);
 
             if (currentCustomer == null)
             {
                 return NotFound("Customer not found.");
             }
 
-            CustomerModelUpdate customerToPatch = new CustomerModelUpdate()
+            Customer customerToPatch = new Customer()
             {
                 Name = currentCustomer.Name,
                 Surname = currentCustomer.Surname,
@@ -182,7 +182,7 @@ namespace LibraryV2.API.Controllers
         public IActionResult ConsumeCredits(int customerId,
             [FromBody] ConsumeRequest credits)
         {
-            CustomerModelInput currentCustomer = _customerDA.GetById(customerId);
+            Customer currentCustomer = _customerDA.GetById(customerId);
 
             if (currentCustomer == null)
             {
@@ -194,7 +194,7 @@ namespace LibraryV2.API.Controllers
                 return BadRequest("Credits can't be consumed because the customer hasn't enough credits.");
             }
 
-            CustomerModelUpdate customerToPatchCredits = new CustomerModelUpdate()
+            Customer customerToPatchCredits = new Customer()
             {
                 Name = currentCustomer.Name,
                 Surname = currentCustomer.Surname,
@@ -203,7 +203,7 @@ namespace LibraryV2.API.Controllers
 
             bool resultCustomerUpdate = _customerDA.UpdateCustomer(customerId, customerToPatchCredits);
 
-            bool resultLogConsumed = _logDA.AddLog(new LogModelOutput()
+            bool resultLogConsumed = _logDA.AddLog(new Log()
             {
                 CustomerId = customerId,
                 OperationType = 1,
@@ -224,14 +224,14 @@ namespace LibraryV2.API.Controllers
         public IActionResult ChargeCredits(int customerId,
             [FromBody] ChargeRequest credits)
         {
-            CustomerModelInput currentCustomer = _customerDA.GetById(customerId);
+            Customer currentCustomer = _customerDA.GetById(customerId);
 
             if (currentCustomer == null)
             {
                 return NotFound($"Customer with id {customerId} not found.");
             }
 
-            CustomerModelUpdate customerToPatchCredits = new CustomerModelUpdate()
+            Customer customerToPatchCredits = new Customer()
             {
                 Name = currentCustomer.Name,
                 Surname = currentCustomer.Surname,
@@ -240,7 +240,7 @@ namespace LibraryV2.API.Controllers
 
             bool resultCustomerUpdate = _customerDA.UpdateCustomer(customerId, customerToPatchCredits);
 
-            bool resultLogAdded = _logDA.AddLog(new LogModelOutput()
+            bool resultLogAdded = _logDA.AddLog(new Log()
             {
                 CustomerId = customerId,
                 OperationType = 2,

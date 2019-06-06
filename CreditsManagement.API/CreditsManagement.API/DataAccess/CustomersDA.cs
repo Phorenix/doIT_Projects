@@ -17,9 +17,64 @@ namespace CreditsManagement.API.DataAccess
             _connectionString = connectionString;
         }
 
-        public List<CustomerModelInput> GetAllNames(string sort = "id")
+        private Customer ReadCustomer(SqlDataReader sqlReader)
         {
-            List<CustomerModelInput> names = new List<CustomerModelInput>();
+            Customer res = new Customer()
+            {
+                Id = int.Parse(sqlReader["Id"].ToString()),
+                Name = sqlReader["Name"].ToString(),
+                Surname = sqlReader["Surname"].ToString(),
+                Credits = int.Parse(sqlReader["Credits"].ToString())
+            };
+            return res;
+        }
+
+        //public List<CustomerModelInput> GetAllNames(string sort = "id")
+        //{
+        //    List<CustomerModelInput> names = new List<CustomerModelInput>();
+
+
+        //    string query = @"SELECT Id
+        //                        ,Name
+        //                        ,Surname
+        //                        ,Credits
+        //                    FROM Customers
+        //                    ORDER BY CASE WHEN @Sort = 'id' THEN Id
+        //                                  WHEN @Sort = 'credits' THEN Credits
+        //                                  END,
+        //                                  CASE
+        //                                      WHEN @Sort = 'name' THEN Name
+        //                                      WHEN @Sort = 'surname' THEN Surname
+        //                                  END";
+
+        //    using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+        //    {
+        //        using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
+        //        {
+        //            sqlCnn.Open();
+        //            sqlCmd.Parameters.AddWithValue("@Sort", sort.ToLower());
+        //            using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
+        //            {
+        //                while (sqlReader.Read())
+        //                {
+        //                    names.Add(new CustomerModelInput()
+        //                    {
+        //                        Id = int.Parse(sqlReader["Id"].ToString()),
+        //                        Name = sqlReader["Name"].ToString(),
+        //                        Surname = sqlReader["Surname"].ToString(),
+        //                        Credits = int.Parse(sqlReader["Credits"].ToString())
+        //                    });
+        //                }
+        //            }
+        //            sqlCnn.Close();
+        //        }
+        //    }
+        //    return names;
+        //}
+
+        public List<Customer> GetAllNames(string sort = "id")
+        {
+            List<Customer> names = new List<Customer>(); 
 
 
             string query = @"SELECT Id
@@ -27,31 +82,19 @@ namespace CreditsManagement.API.DataAccess
                                 ,Surname
                                 ,Credits
                             FROM Customers
-                            ORDER BY CASE WHEN @Sort = 'id' THEN Id
-                                          WHEN @Sort = 'credits' THEN Credits
-                                          END,
-                                          CASE
-                                              WHEN @Sort = 'name' THEN Name
-                                              WHEN @Sort = 'surname' THEN Surname
-                                          END";
+                            ORDER BY " + sort ;
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
                 using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
                 {
                     sqlCnn.Open();
-                    sqlCmd.Parameters.AddWithValue("@Sort", sort.ToLower());
+                    //sqlCmd.Parameters.AddWithValue("@Sort", sort.ToLower());
                     using (SqlDataReader sqlReader = sqlCmd.ExecuteReader())
                     {
                         while (sqlReader.Read())
                         {
-                            names.Add(new CustomerModelInput()
-                            {
-                                Id = int.Parse(sqlReader["Id"].ToString()),
-                                Name = sqlReader["Name"].ToString(),
-                                Surname = sqlReader["Surname"].ToString(),
-                                Credits = int.Parse(sqlReader["Credits"].ToString())
-                            });
+                            names.Add(ReadCustomer(sqlReader));
                         }
                     }
                     sqlCnn.Close();
@@ -60,9 +103,9 @@ namespace CreditsManagement.API.DataAccess
             return names;
         }
 
-        public CustomerModelInput GetById(int id)
+        public Customer GetById(int id)
         {
-            CustomerModelInput result = null;
+            Customer customerToReturn = null;
 
             string query = @"SELECT Id
                                 ,Name
@@ -82,22 +125,16 @@ namespace CreditsManagement.API.DataAccess
                         if (sqlReader.HasRows)
                         {
                             sqlReader.Read();
-                            result = new CustomerModelInput()
-                            {
-                                Id = int.Parse(sqlReader["Id"].ToString()),
-                                Name = sqlReader["Name"].ToString(),
-                                Surname = sqlReader["Surname"].ToString(),
-                                Credits = int.Parse(sqlReader["Credits"].ToString())
-                            };
+                            customerToReturn = ReadCustomer(sqlReader);
                         }
                     }
                     sqlCnn.Close();
                 }
             }
-            return result;
+            return customerToReturn;
         }
 
-        public bool AddCustomer(CustomerModelOutput customer)
+        public bool AddCustomer(Customer customer)
         {
             string query = @"INSERT INTO Customers (Name, Surname, Credits) VALUES (@Name, @Surname, @Credits)";
 
@@ -153,7 +190,7 @@ namespace CreditsManagement.API.DataAccess
             return result;
         }
 
-        public bool UpdateCustomer(int id, CustomerModelUpdate customer)
+        public bool UpdateCustomer(int id, Customer customer)
         {
             string query = @"UPDATE Customers SET Name = @Name
 	                            ,Surname = @Surname

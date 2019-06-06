@@ -25,7 +25,7 @@ namespace CreditsManagement.API.Controllers
         [HttpGet()]
         public IActionResult Get([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
         {
-            List<LogModelInput> logs = _logDA.GetAllLogs();
+            List<Log> logs = _logDA.GetAllLogs();
 
             if (!logs.Any())
             {
@@ -47,7 +47,14 @@ namespace CreditsManagement.API.Controllers
                 }
                 else
                 {
-                    logs = _logDA.GetAllLogsInPartialPeriod(fromDate, toDate);
+                    if (toDate != DateTime.MinValue)
+                    {
+                        logs = _logDA.GetAllLogsUntilDate(toDate);
+                    }
+                    else
+                    {
+                        logs = _logDA.GetAllLogsFromDate(fromDate);
+                    }
                 }
             }
             else
@@ -61,14 +68,14 @@ namespace CreditsManagement.API.Controllers
         public IActionResult Get(int customerId, 
             [FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
         {
-            CustomerModelInput result = _customerDA.GetById(customerId);
+            Customer result = _customerDA.GetById(customerId);
 
             if (result == null)
             {
                 return NotFound($"Customer with id {customerId} not found.");
             }
 
-            List<LogModelInput> logs = new List<LogModelInput>();
+            List<Log> logs = new List<Log>();
 
             if (fromDate != DateTime.MinValue || toDate != DateTime.MinValue)
             {
@@ -85,7 +92,14 @@ namespace CreditsManagement.API.Controllers
                 }
                 else
                 {
-                    logs = _logDA.GetLogsInPartialPeriod(customerId, fromDate, toDate);
+                    if (toDate != DateTime.MinValue)
+                    {
+                        logs = _logDA.GetLogsByIdUntilDate(customerId, toDate);
+                    }
+                    else
+                    {
+                        logs = _logDA.GetLogsByIdFromDate(customerId, fromDate);
+                    }
                 }
             }
             else
