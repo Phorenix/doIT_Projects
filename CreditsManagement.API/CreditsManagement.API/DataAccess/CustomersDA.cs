@@ -137,20 +137,47 @@ namespace CreditsManagement.API.DataAccess
             return customerToReturn;
         }
 
-        public bool AddCustomerAndLog(Customer customerToAdd, Log logToAdd)
+        //public void AddCustomerAndLog(Customer customerToAdd)
+        //{
+        //    string query = @"BEGIN TRY
+        //                        BEGIN TRANSACTION
+        //                            DECLARE @NewCId int
+        //                            INSERT INTO Customers (Name, Surname, Credits) VALUES (@Name, @Surname, @Credits)
+        //                            SET @NewCId = @@IDENTITY
+
+        //                            INSERT INTO OperationLog (CustomerId, OperationType, Amount) VALUES (@NewCId, 2, @Credits)
+        //                            COMMIT
+        //                    END TRY
+
+        //                    BEGIN CATCH
+        //                        ROLLBACK
+        //                    END CATCH";
+
+        //    try
+        //    {
+        //        using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
+        //        {
+        //            using (SqlCommand sqlCmd = new SqlCommand(query, sqlCnn))
+        //            {
+        //                sqlCmd.Parameters.AddWithValue("@Name", customerToAdd.Name);
+        //                sqlCmd.Parameters.AddWithValue("@Surname", customerToAdd.Surname);
+        //                sqlCmd.Parameters.AddWithValue("@Credits", customerToAdd.Credits);
+
+        //                sqlCnn.Open();
+        //                int rowsAffected = sqlCmd.ExecuteNonQuery();
+        //                sqlCnn.Close();
+        //            }
+        //        }
+        //    }
+        //    catch (Exception)
+        //    {
+        //        throw new Exception("A problem happened with headling your request.");
+        //    }
+        //}
+
+        public void AddCustomerAndLogWithExec(Customer customerToAdd)
         {
-            string query = @"BEGIN TRY
-                                BEGIN TRANSACTION
-                                    INSERT INTO Customers (Name, Surname, Credits) VALUES (@Name, @Surname, @Credits)
-                                    INSERT INTO OperationLog (CustomerId, OperationType, Amount) VALUES (@CustomerId, @OperationType, @Amount)
-                                    COMMIT
-                            END TRY
-
-                            BEGIN CATCH
-                                ROLLBACK
-                            END CATCH";
-
-            bool result = true;
+            string query = @"EXEC uspInsertNewCustomer @Name, @Surname, @Credits";
 
             try
             {
@@ -162,10 +189,6 @@ namespace CreditsManagement.API.DataAccess
                         sqlCmd.Parameters.AddWithValue("@Surname", customerToAdd.Surname);
                         sqlCmd.Parameters.AddWithValue("@Credits", customerToAdd.Credits);
 
-                        sqlCmd.Parameters.AddWithValue("@CustomerId", logToAdd.CustomerId);
-                        sqlCmd.Parameters.AddWithValue("@OperationType", logToAdd.OperationType);
-                        sqlCmd.Parameters.AddWithValue("@Amount", logToAdd.Amount);
-
                         sqlCnn.Open();
                         int rowsAffected = sqlCmd.ExecuteNonQuery();
                         sqlCnn.Close();
@@ -174,9 +197,8 @@ namespace CreditsManagement.API.DataAccess
             }
             catch (Exception)
             {
-                result = false;
+                throw new Exception("A problem happened with headling your request.");
             }
-            return result;
         }
 
         public bool DeleteById(int id)

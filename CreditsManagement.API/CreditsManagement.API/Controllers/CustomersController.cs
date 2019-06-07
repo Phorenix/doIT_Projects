@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using CreditsManagement.API.DataAccess;
 using CreditsManagement.API.Models;
@@ -61,21 +62,9 @@ namespace LibraryV2.API.Controllers
                 return BadRequest("A problem happened with headling your request.");
             }
 
-            bool resultCustomerAdded = _customerDA.AddCustomerAndLog(customer, new Log()
-            {
-                CustomerId = customer.Id,
-                OperationType = 2,
-                Amount = customer.Credits
-            });
-
-            if (resultCustomerAdded)
-            {
-                return Ok("Customer added without any problems.");
-            }
-            else
-            {
-                return StatusCode(500, "A problem happened with headling your request.");
-            }
+            _customerDA.AddCustomerAndLogWithExec(customer);
+            
+            return Ok("Customer added without any problems.");
         }
 
         [HttpDelete("{id}")]
@@ -114,26 +103,14 @@ namespace LibraryV2.API.Controllers
             if (exist == null)
             {
                 //return NotFound("Customer not found.");
-                bool added = _customerDA.AddCustomerAndLog(new Customer()
+                _customerDA.AddCustomerAndLogWithExec(new Customer()
                 {
                     Name = customer.Name,
                     Surname = customer.Surname,
                     Credits = customer.Credits
-                }, new Log()
-                {
-                    CustomerId = customer.Id,
-                    OperationType = 2,
-                    Amount = customer.Credits
                 });
 
-                if (added)
-                {
-                    return Ok("Customer added without any problems.");
-                }
-                else
-                {
-                    return StatusCode(500, "A problem happened with headling your request.");
-                }
+                return Ok("Customer added without any problems.");
             }
 
             if (exist.Credits != customer.Credits)
