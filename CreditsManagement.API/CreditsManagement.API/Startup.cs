@@ -36,6 +36,8 @@ namespace CreditsManagement.API
 
             services.AddScoped<LogsDA>(da => new LogsDA(connectionString));
             services.AddScoped<CustomersDA>(da => new CustomersDA(connectionString));
+
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,6 +47,12 @@ namespace CreditsManagement.API
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseCors(options => options
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            .AllowAnyMethod());
 
             app.UseMvc();
         }

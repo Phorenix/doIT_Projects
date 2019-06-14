@@ -117,7 +117,8 @@ namespace CreditsManagement.API.DataAccess
             List<Log> logs = new List<Log>();
 
             // Name, Surname
-            string query = ShortQuerySelect();
+            string query = $@"{ShortQuerySelect()}
+                              ORDER BY L.OperationDate DESC";
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
@@ -137,7 +138,9 @@ namespace CreditsManagement.API.DataAccess
         {
             List<Log> logs = new List<Log>();
 
-            string query = @"" + ShortQuerySelect() + "WHERE @From <= L.OperationDate AND L.OperationDate <= @To";
+            string query = $@"{ShortQuerySelect()}
+                              WHERE @From <= L.OperationDate AND L.OperationDate <= @To
+                              ORDER BY L.OperationDate DESC";
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
@@ -159,8 +162,9 @@ namespace CreditsManagement.API.DataAccess
         {
             List<Log> logs = new List<Log>();
 
-            string query = @"" + ShortQuerySelect() +
-                            "WHERE L.OperationDate <= @Date";
+            string query = $@"{ShortQuerySelect()}
+                              WHERE L.OperationDate <= @Date
+                              ORDER BY L.OperationDate DESC";
 
             logs = GetLogsSingleDate(query, toDate);
 
@@ -171,8 +175,9 @@ namespace CreditsManagement.API.DataAccess
         {
             List<Log> logs = new List<Log>();
 
-            string query = @"" + ShortQuerySelect() +
-                            "WHERE @Date <= L.OperationDate";
+            string query = $@"{ShortQuerySelect()}
+                              WHERE @Date <= L.OperationDate
+                              ORDER BY L.OperationDate DESC";
 
             logs = GetLogsSingleDate(query, fromDate);
 
@@ -187,8 +192,9 @@ namespace CreditsManagement.API.DataAccess
         {
             List<Log> logs = new List<Log>();
 
-            string query = @"" + ShortQuerySelect() +
-                            "WHERE L.CustomerId = @CustomerId";
+            string query = $@"{ShortQuerySelect()}
+                              WHERE L.CustomerId = @CustomerId
+                              ORDER BY L.OperationDate DESC";
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
@@ -209,8 +215,9 @@ namespace CreditsManagement.API.DataAccess
         {
             List<Log> logs = new List<Log>();
 
-            string query = @"" + ShortQuerySelect() +
-                            "WHERE @From <= L.OperationDate AND L.OperationDate <= @To AND L.CustomerId = @CustomerId";
+            string query = $@"{ShortQuerySelect()}
+                              WHERE @From <= L.OperationDate AND L.OperationDate <= @To AND L.CustomerId = @CustomerId
+                              ORDER BY L.OperationDate DESC";
 
             using (SqlConnection sqlCnn = new SqlConnection(_connectionString))
             {
@@ -233,8 +240,9 @@ namespace CreditsManagement.API.DataAccess
         {
             List<Log> logs = new List<Log>();
 
-            string query = @"" + ShortQuerySelect() +
-                            "WHERE L.OperationDate <= @Date AND L.CustomerId = @CustomerId";
+            string query = $@"{ShortQuerySelect()}
+                              WHERE L.OperationDate <= @Date AND L.CustomerId = @CustomerId
+                              ORDER BY L.OperationDate DESC";
 
             logs = ReadLogsByIdSingleDate(customerId, query, toDate);
 
@@ -245,8 +253,9 @@ namespace CreditsManagement.API.DataAccess
         {
             List<Log> logs = new List<Log>();
 
-            string query = @"" + ShortQuerySelect() +
-                            "WHERE @Date <= L.OperationDate AND L.CustomerId = @CustomerId";
+            string query = $@"{ShortQuerySelect()}
+                              WHERE @Date <= L.OperationDate AND L.CustomerId = @CustomerId
+                              ORDER BY L.OperationDate DESC";
 
             logs = ReadLogsByIdSingleDate(customerId, query, fromDate);
 

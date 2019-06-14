@@ -70,9 +70,9 @@ namespace LibraryV2.API.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteCustomer(int id)
         {
-            Customer exist = _customerDA.GetById(id);
+            Customer currentCustomer = _customerDA.GetById(id);
 
-            if (exist == null)
+            if (currentCustomer == null)
             {
                 return NotFound("Customer not found.");
             }
@@ -98,9 +98,9 @@ namespace LibraryV2.API.Controllers
                 return BadRequest("A problem happened with headling your request.");
             }
 
-            Customer exist = _customerDA.GetById(id);
+            Customer currentCustomer = _customerDA.GetById(id);
 
-            if (exist == null)
+            if (currentCustomer == null)
             {
                 //return NotFound("Customer not found.");
                 _customerDA.AddCustomerAndLogWithExec(new Customer()
@@ -113,12 +113,62 @@ namespace LibraryV2.API.Controllers
                 return Ok("Customer added without any problems.");
             }
 
-            if (exist.Credits != customer.Credits)
-            {
-                return BadRequest("You can't modify the credits in this way");
-            }
+            bool result = false;
 
-            bool result = _customerDA.UpdateCustomer(id, customer);
+            //if (currentCustomer.Credits == customer.Credits)
+            //{
+            //    result = _customerDA.UpdateCustomer(id, customer);                
+            //}
+            //else
+            //{
+            //    if (currentCustomer.Credits > customer.Credits)
+            //    {
+            //        result = _customerDA.UpdateCustomerAndLog(id, new Customer()
+            //        {
+            //            Name = currentCustomer.Name,
+            //            Surname = currentCustomer.Surname,
+            //            Credits = customer.Credits
+            //        }, new Log()
+            //        {
+            //            CustomerId = id,
+            //            OperationType = 1,
+            //            Amount = currentCustomer.Credits - customer.Credits
+            //        });
+            //    }
+            //    else
+            //    {
+            //        result = _customerDA.UpdateCustomerAndLog(id, new Customer()
+            //        {
+            //            Name = currentCustomer.Name,
+            //            Surname = currentCustomer.Surname,
+            //            Credits = customer.Credits
+            //        }, new Log()
+            //        {
+            //            CustomerId = id,
+            //            OperationType = 2,
+            //            Amount = customer.Credits - currentCustomer.Credits
+            //        });
+            //    }
+            //}
+
+            if (currentCustomer.Credits == customer.Credits)
+            {
+                result = _customerDA.UpdateCustomer(id, customer);
+            }
+            else
+            {
+                result = _customerDA.UpdateCustomerAndLog(id, new Customer()
+                {
+                    Name = customer.Name,
+                    Surname = customer.Surname,
+                    Credits = customer.Credits
+                }, new Log()
+                {
+                    CustomerId = id,
+                    OperationType = 4,
+                    Amount = customer.Credits
+                });
+            }
 
             if (result)
             {
@@ -129,7 +179,7 @@ namespace LibraryV2.API.Controllers
                 return StatusCode(500, "A problem happened with headling your request.");
             }
         }
-
+    
         [HttpPatch("{id}")]
         public IActionResult Patch(int id, 
             [FromBody] JsonPatchDocument<Customer> patchDoc)
@@ -160,12 +210,62 @@ namespace LibraryV2.API.Controllers
                 Credits = currentCustomer.Credits
             });
 
-            if (customerToPatch.Credits != currentCustomer.Credits)
-            {
-                return BadRequest("You can't modify the credits in this way");
-            }
+            bool result = false;
 
-            bool result = _customerDA.UpdateCustomer(id, customerToPatch);
+            //if (currentCustomer.Credits == customer.Credits)
+            //{
+            //    result = _customerDA.UpdateCustomer(id, customer);                
+            //}
+            //else
+            //{
+            //    if (currentCustomer.Credits > customer.Credits)
+            //    {
+            //        result = _customerDA.UpdateCustomerAndLog(id, new Customer()
+            //        {
+            //            Name = currentCustomer.Name,
+            //            Surname = currentCustomer.Surname,
+            //            Credits = customer.Credits
+            //        }, new Log()
+            //        {
+            //            CustomerId = id,
+            //            OperationType = 1,
+            //            Amount = currentCustomer.Credits - customer.Credits
+            //        });
+            //    }
+            //    else
+            //    {
+            //        result = _customerDA.UpdateCustomerAndLog(id, new Customer()
+            //        {
+            //            Name = currentCustomer.Name,
+            //            Surname = currentCustomer.Surname,
+            //            Credits = customer.Credits
+            //        }, new Log()
+            //        {
+            //            CustomerId = id,
+            //            OperationType = 2,
+            //            Amount = customer.Credits - currentCustomer.Credits
+            //        });
+            //    }
+            //}
+
+            if (currentCustomer.Credits == customerToPatch.Credits)
+            {
+                result = _customerDA.UpdateCustomer(id, customerToPatch);
+            }
+            else
+            {
+                result = _customerDA.UpdateCustomerAndLog(id, new Customer()
+                {
+                    Name = currentCustomer.Name,
+                    Surname = currentCustomer.Surname,
+                    Credits = customerToPatch.Credits
+                }, new Log()
+                {
+                    CustomerId = id,
+                    OperationType = 4,
+                    Amount = customerToPatch.Credits
+                });
+            }
 
             if (result)
             {
