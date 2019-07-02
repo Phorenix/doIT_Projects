@@ -1,0 +1,28 @@
+<div class="card">
+  <div class="card-header">
+    {{'TitleCustomerList' | translate}}
+    <a [routerLink]="['/customerpost']">{{'AddNewCustomerButton' | translate}}</a>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table" *ngIf='customersList && customersList.length'>
+        <thead>
+          <tr>
+            <th>{{'NameColumnCustomerID' | translate}}</th>
+            <th>{{'NameColumnCustomerName' | translate}}</th>
+            <th>{{'NameColumnCustomerSurname' | translate}}</th>
+            <th>{{'NameColumnCustomerCredits' | translate}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor='let customer of customersList'>
+            <td>{{ customer.id }}</td>
+            <td><a [routerLink]="['/customers', customer.id]">{{ customer.name }}</a></td>
+            <td>{{ customer.surname }}</td>
+            <td>{{ customer.credits }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

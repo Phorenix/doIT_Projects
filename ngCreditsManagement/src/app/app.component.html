@@ -1,0 +1,13 @@
+<nav class="navbar navbar-expand navbar-light bg-light">
+  <a class="navbar-brand">{{'TitleApp' | translate}}</a>
+  <ul class="nav nav-pills">
+    <li><a class="nav-link" routerLinkActive='active' [routerLink]="['/customers']">{{'TitleButtonCustomerList' | translate}}</a></li>
+  </ul>
+  <mat-select [(value)]="selectedLanguage">
+    <mat-option value="en" (click)="changeLaguage()">English</mat-option>
+    <mat-option value="it" (click)="changeLaguage()">Italiano</mat-option>
+  </mat-select>
+</nav>
+<div class="container">
+  <router-outlet></router-outlet>
+</div>

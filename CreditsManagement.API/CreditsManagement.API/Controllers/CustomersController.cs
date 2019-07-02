@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Microsoft.AspNetCore.Mvc;
 
-namespace LibraryV2.API.Controllers
+namespace CreditsManagement.API.Controllers
 {
     [Route("api/[controller]")]
     public class CustomersController : Controller
@@ -17,10 +17,6 @@ namespace LibraryV2.API.Controllers
         private CustomersDA _customerDA;
         private LogsDA _logDA;
 
-        /// <summary>
-        /// This is the controller for customers
-        /// </summary>
-        /// <param name="customerDA">Data access to read from database the customers</param>
         public CustomersController(CustomersDA customerDA, LogsDA logDA)
         {
             _customerDA = customerDA;
@@ -211,42 +207,6 @@ namespace LibraryV2.API.Controllers
             });
 
             bool result = false;
-
-            //if (currentCustomer.Credits == customer.Credits)
-            //{
-            //    result = _customerDA.UpdateCustomer(id, customer);                
-            //}
-            //else
-            //{
-            //    if (currentCustomer.Credits > customer.Credits)
-            //    {
-            //        result = _customerDA.UpdateCustomerAndLog(id, new Customer()
-            //        {
-            //            Name = currentCustomer.Name,
-            //            Surname = currentCustomer.Surname,
-            //            Credits = customer.Credits
-            //        }, new Log()
-            //        {
-            //            CustomerId = id,
-            //            OperationType = 1,
-            //            Amount = currentCustomer.Credits - customer.Credits
-            //        });
-            //    }
-            //    else
-            //    {
-            //        result = _customerDA.UpdateCustomerAndLog(id, new Customer()
-            //        {
-            //            Name = currentCustomer.Name,
-            //            Surname = currentCustomer.Surname,
-            //            Credits = customer.Credits
-            //        }, new Log()
-            //        {
-            //            CustomerId = id,
-            //            OperationType = 2,
-            //            Amount = customer.Credits - currentCustomer.Credits
-            //        });
-            //    }
-            //}
 
             if (currentCustomer.Credits == customerToPatch.Credits)
             {

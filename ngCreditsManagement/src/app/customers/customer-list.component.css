@@ -1,0 +1,7 @@
+td a{
+  color: black;
+}
+td a:hover{
+  text-decoration: none;
+  color: #1080ff;
+}

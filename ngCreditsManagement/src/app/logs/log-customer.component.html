@@ -1,0 +1,36 @@
+<div class="card" style="margin-top: 4%;">
+  <div class="card-header">
+      {{'TitleLogsList' | translate}}
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table" *ngIf="logs && logs.length">
+        <thead>
+          <tr>
+            <th>{{'NameColumnLogID' | translate}}</th>
+            <th>{{'NameColumnLogCustomerID' | translate}}</th>
+            <th>{{'NameColumnLogCustomerName' | translate}} Name</th>
+            <th>{{'NameColumnLogCustomerSurname' | translate}}</th>
+            <th>{{'NameColumnLogOT' | translate}}</th>
+            <th>{{'NameColumnLogAmount' | translate}}</th>
+            <th>{{'NameColumnLogDate' | translate}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let log of logs">
+            <td>{{ log.id }}</td>
+            <td>{{ log.customerId }}</td>
+            <td>{{ log.customerName }}</td>
+            <td>{{ log.customerSurname }}</td>
+            <td *ngIf="log.operationType == 1">{{'CreditsConsumed' | translate}}</td>
+            <td *ngIf="log.operationType == 2">{{'CreditsCharged' | translate}}</td>
+            <td *ngIf="log.operationType == 3">{{'CreditsInit' | translate}}</td>
+            <td *ngIf="log.operationType == 4">{{'CreditsModified' | translate}}</td>
+            <td>{{ log.amount }}</td>
+            <td>{{ log.date }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

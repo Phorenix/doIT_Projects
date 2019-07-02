@@ -1,0 +1,25 @@
+<div class="card">
+  <div class="card-header">
+    {{'AddCustomerTitle' | translate}}
+    <button style="float: right;" class="btn btn-primary" (click)="addCustomer()">{{'SaveButton' | translate}}</button>
+  </div>
+  <div class='card-body'>
+      <div class='row'>
+        <div class='col-md-8'>
+          <div class='row'>
+            <div class='col-md-4'>{{'PostColumnName' | translate}}:</div>
+            <input type="text" name="name" [(ngModel)]="customer.name">
+          </div>
+          <div class='row'>
+            <div class='col-md-4'>{{'PostColumnSurname' | translate}}:</div>
+            <input type="text" name="surname" [(ngModel)]="customer.surname">
+          </div>
+          <div class='row'>
+            <div class='col-md-4'>{{'PostColumnCredits' | translate}}:</div>
+            <input type="text" name="credits" [(ngModel)]="customer.credits">
+          </div>
+        </div>
+      </div>
+    </div>
+  <div class="card-footer"></div>
+</div>
